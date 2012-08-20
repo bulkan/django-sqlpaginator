@@ -1,7 +1,12 @@
+import logging
+
 from math import ceil
 
 from django.db import connection
 from django.core.paginator import Page
+
+
+logger = logging.getLogger(__name__)
 
 
 class Paginator(object):
@@ -13,6 +18,8 @@ class SqlPaginator(Paginator):
 
         self.per_page = per_page
 
+        self.model = model
+
         self.orphans = 0
 
         self._num_pages = self._count = None
@@ -21,7 +28,7 @@ class SqlPaginator(Paginator):
 
         self.d = {'sql': initial_sql,
              'order_by': order_by,
-             'offset': int(page - 1) * 10,
+             'offset': int(page) * 10,
              'limit': 10
              }
 
@@ -65,6 +72,14 @@ class SqlPaginator(Paginator):
 
         cursor = connection.cursor()
         self.d.update({'offset': number})
+
+
+        print '*'*80
+        print 'count: %d' % self.count
+        print 'num_pages: %d' % self.num_pages
+        logger.info("sql: %s" % self._sql)
+        print self._sql
+        print '*'*80
 
         cursor.execute(self._sql)
         rows = cursor.fetchall()
