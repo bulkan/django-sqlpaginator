@@ -10,9 +10,3 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'tests.test_settings'
 
 from django.test.utils import setup_test_environment
 setup_test_environment()
-
-from django.db import connection
-
-
-c = connection.cursor()
-print c.execute('select * from artist').fetchall()
