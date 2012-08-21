@@ -9,3 +9,5 @@ DATABASES = {
         'NAME': os.path.join(FOLDER_ROOT, 'chinook/Chinook_Sqlite.sqlite')
     }
 }
+
+SECRET_KEY = 'issomethingsecret'

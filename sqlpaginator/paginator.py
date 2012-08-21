@@ -27,7 +27,7 @@ class SqlPaginator(Paginator):
         self.object_list = []
 
         self.page_num = page
-        print 'page: %d' % page
+        #print 'page: %d' % page
 
         # dict to resolve the sql template with
         self.d = {'sql': initial_sql,
@@ -47,7 +47,7 @@ class SqlPaginator(Paginator):
     def _get_count(self):
         if self._count is None:
             cursor = connection.cursor()
-            sql = 'SELECT COUNT(au.id) FROM %(table_name)s as au' % {'table_name': self.model._meta.db_table}
+            sql = 'SELECT COUNT(*) FROM %(table_name)s as au' % {'table_name': self.model._meta.db_table}
             cursor.execute(sql)
             rows = cursor.fetchall()
             count = int(rows[0][0])
@@ -69,27 +69,22 @@ class SqlPaginator(Paginator):
     def page(self, number):
         number = self.validate_number(number)
 
-        cursor = connection.cursor()
+        #cursor = connection.cursor()
 
         self.d.update({'offset': (number - 1) * 10})
 
-        #print '*' * 80
-        #print 'count: %d' % self.count
-        #print 'num_pages: %d' % self.num_pages
+        logger.debug('count: %d' % self.count)
+        logger.debug('num_pages: %d' % self.num_pages)
 
         sql = self._tsql % self.d
-        logger.info("sql: %s" % sql)
-        #print sql
+        logger.debug("sql: %s" % sql)
 
-        cursor.execute(sql)
-        rows = cursor.fetchall()
-        ids = [row[0] for row in rows]
+        #cursor.execute(sql)
+        #rows = cursor.fetchall()
+        #ids = [row[0] for row in rows]
 
-        self.object_list = self.model.objects.filter(id__in=ids)
-
-        #print object_list
-
-        #print '*' * 80
+        #self.object_list = self.model.objects.filter(id__in=ids)
+        self.object_list = list(self.model.objects.raw(sql))
 
         #return Page(object_list[bottom:top], number, self)
         return Page(self.object_list, number, self)
