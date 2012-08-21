@@ -3,14 +3,10 @@ import logging
 from math import ceil
 
 from django.db import connection
-from django.core.paginator import Page
+from django.core.paginator import Page, Paginator
 
 
 logger = logging.getLogger(__name__)
-
-
-class Paginator(object):
-    pass
 
 
 class SqlPaginator(Paginator):
@@ -26,13 +22,17 @@ class SqlPaginator(Paginator):
 
         self.initial_sql = initial_sql
 
+        self.page_num = page
+        print 'page: %d' % page
+
         self.d = {'sql': initial_sql,
              'order_by': order_by,
-             'offset': int(page) * 10,
-             'limit': 10
+             'offset': int(page - 1) * self.per_page,
+             'limit': self.per_page
              }
 
-        self._sql = '%(sql)s ORDER BY %(order_by)s OFFSET %(offset)d LIMIT %(limit)d' % self.d
+        self._tsql = '%(sql)s ORDER BY %(order_by)s LIMIT %(limit)d OFFSET %(offset)d' 
+        self._sql = self._tsql % self.d
 
     def get_sql(self):
         return self._sql
@@ -42,11 +42,11 @@ class SqlPaginator(Paginator):
     def _get_count(self):
         if self._count is None:
             cursor = connection.cursor()
-            sql = 'SELECT COUNT(au.id) FROM (%s) as au' % self.sql
+            sql = 'SELECT COUNT(au.id) FROM %s as au' % self.model._meta.db_table
             cursor.execute(sql)
             rows = cursor.fetchall()
-
-            self._count = int(rows[0][0])
+            count = int(rows[0][0])
+            self._count = count
         return self._count
 
     count = property(_get_count)
@@ -64,6 +64,7 @@ class SqlPaginator(Paginator):
     num_pages = property(_get_num_pages)
 
     def page(self, number):
+        number = self.validate_number(number)
         bottom = (number - 1) * self.per_page
         top = bottom + self.per_page
 
@@ -71,20 +72,26 @@ class SqlPaginator(Paginator):
             top = self.count
 
         cursor = connection.cursor()
-        self.d.update({'offset': number})
 
+        self.d.update({'offset': (number - 1) * 10})
 
-        print '*'*80
+        print '*' * 80
         print 'count: %d' % self.count
         print 'num_pages: %d' % self.num_pages
-        logger.info("sql: %s" % self._sql)
-        print self._sql
-        print '*'*80
 
-        cursor.execute(self._sql)
+        sql = self._tsql % self.d
+        logger.info("sql: %s" % sql)
+        print sql
+
+
+        cursor.execute(sql)
         rows = cursor.fetchall()
         ids = [row[0] for row in rows]
 
-        members = self.model.objects.filter(id__in=ids)
+        object_list = self.model.objects.filter(id__in=ids)
 
-        return Page(members[bottom:top], number, self)
+        print object_list
+
+        print '*' * 80
+
+        return Page(object_list[bottom:top], number, self)
