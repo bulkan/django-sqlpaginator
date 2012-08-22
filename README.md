@@ -93,6 +93,5 @@ contributing
 * Change code
 * Add tests
 * Run the tests
-
-    nosetests -s --with-coverage --cover-package=sqlpaginator
+```nosetests -s --with-coverage --cover-package=sqlpaginator```
 * Submit pull request
