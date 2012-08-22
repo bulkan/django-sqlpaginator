@@ -48,6 +48,19 @@ class SqlPaginatorTests(TestCase):
         paginator = SqlPaginator(sql, Album, page=page, order_by='title')
         albums = paginator.page(page)
         self.assertTrue(len(albums) > 0)
+
         # last page
         albums = paginator.page(paginator.num_pages)
         self.assertTrue(len(albums) > 0)
+
+    def test_order_by_direction(self):
+        sql = "select * from %s" % Album._meta.db_table
+        page = 1
+        paginator = SqlPaginator(sql, Album, page=page, order_by='albumid')
+        albums = [a.albumid for a in paginator.page(page)]
+        self.assertTrue(len(albums) > 0)
+        self.assertEqual(albums, range(1, 11))
+
+        paginator = SqlPaginator(sql, Album, page=page, order_by='albumid', direction='desc')
+        albums = [a.albumid for a in paginator.page(page)]
+        self.assertEqual(albums, list(reversed(range(338, 348))))

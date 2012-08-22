@@ -13,36 +13,29 @@ logger = logging.getLogger(__name__)
 
 class SqlPaginator(object):
 
-    def __init__(self, initial_sql, model, order_by='id', page=1, count=None, per_page=10):
+    def __init__(self, initial_sql, model, order_by='id', page=1,
+                count=None, per_page=10, direction='asc'):
 
         self.per_page = per_page
-
         self.model = model
-
         self.orphans = 0
-
         self._num_pages = None
-
         self._count = count
-
         self.initial_sql = initial_sql
-
         self.object_list = []
-
         self.order_by = order_by
-
         self.page_num = page
-
         self.allow_empty_first_page = True
 
         # dict to resolve the sql template with
         self.d = {'sql': initial_sql,
              'order_by': order_by,
              'offset': int(page - 1) * self.per_page,
-             'limit': self.per_page
+             'limit': self.per_page,
+             'direction': direction,
              }
 
-        self._tsql = '%(sql)s order by %(order_by)s limit %(limit)d offset %(offset)d' 
+        self._tsql = '%(sql)s order by %(order_by)s %(direction)s limit %(limit)d offset %(offset)d'
         self._sql = self._tsql % self.d
 
     def get_sql(self):
