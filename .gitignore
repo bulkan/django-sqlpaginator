@@ -38,4 +38,9 @@ pip-log.txt
 #Mr Developer
 .mr.developer.cfg
 
+# other
 cover
+include
+lib
+local
+man
