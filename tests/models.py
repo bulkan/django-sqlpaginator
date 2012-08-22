@@ -1,29 +1,25 @@
 # This is an auto-generated Django model module.
-# You'll have to do the following manually to clean this up:
-#     * Rearrange models' order
-#     * Make sure each model has one field with primary_key=True
-# Feel free to rename the models, but don't rename db_table values or field names.
-#
-# Also note: You'll have to insert the output of 'django-admin.py sqlcustom [appname]'
-# into your database.
 
 from django.db import models
 
 class Album(models.Model):
-    albumid = models.IntegerField(primary_key=True, db_column=u'AlbumId') # Field name made lowercase.
+    albumid = models.IntegerField(primary_key=True, db_column=u'AlbumId')
     title = models.TextField(db_column=u'Title') # Field name made lowercase. This field type is a guess.
-    artistid = models.IntegerField(db_column=u'ArtistId') # Field name made lowercase.
+    artistid = models.IntegerField(db_column=u'ArtistId')
     class Meta:
         db_table = u'Album'
 
+    def __unicode__(self):
+        return "<Album: %s, %d>" % (self.title, self.artistid)
+
 class Artist(models.Model):
-    artistid = models.IntegerField(primary_key=True, db_column=u'ArtistId') # Field name made lowercase.
+    artistid = models.IntegerField(primary_key=True, db_column=u'ArtistId')
     name = models.TextField(db_column=u'Name', blank=True) # Field name made lowercase. This field type is a guess.
     class Meta:
         db_table = u'Artist'
 
 class Customer(models.Model):
-    customerid = models.IntegerField(primary_key=True, db_column=u'CustomerId') # Field name made lowercase.
+    customerid = models.IntegerField(primary_key=True, db_column=u'CustomerId')
     firstname = models.TextField(db_column=u'FirstName') # Field name made lowercase. This field type is a guess.
     lastname = models.TextField(db_column=u'LastName') # Field name made lowercase. This field type is a guess.
     company = models.TextField(db_column=u'Company', blank=True) # Field name made lowercase. This field type is a guess.
