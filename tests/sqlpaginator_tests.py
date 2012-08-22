@@ -3,7 +3,7 @@ from unittest import TestCase
 from django.contrib.auth.models import User
 
 
-from models import Artist
+from models import Artist, Album
 from sqlpaginator.paginator import SqlPaginator
 
 
@@ -41,3 +41,13 @@ class SqlPaginatorTests(TestCase):
         sql_paginator = SqlPaginator(sql, Artist, page=6, order_by='artistid')
         artists = sql_paginator.page(6)
         self.assertEqual([a.artistid for a in artists.object_list][0], 51)
+
+    def test_albums(self):
+        sql = "select * from %s" % Album._meta.db_table
+        page = 1
+        paginator = SqlPaginator(sql, Album, page=page, order_by='title')
+        albums = paginator.page(page)
+        self.assertTrue(len(albums) > 0)
+        # last page
+        albums = paginator.page(paginator.num_pages)
+        self.assertTrue(len(albums) > 0)

@@ -46,8 +46,8 @@ and you want to paginate on Albums, then inside a view;
     from models import Album
 
     def get_albums(request, page=1):
-        sql = "select * from FROM %s" % Album._meta.db_table
-        paginator = SqlPaginator(sql, Album, page=page)
+        sql = "select * from %s" % Album._meta.db_table
+        paginator = SqlPaginator(sql, Album, page=page, order_by='title')
 
         try:
             albums = paginator.page(page)
@@ -56,7 +56,7 @@ and you want to paginate on Albums, then inside a view;
             albums = paginator.page(1)
         except EmptyPage:
             # If page is out of range (e.g. 9999), deliver last page of results.
-            albums = paginator.page(sp.num_pages)
+            albums = paginator.page(paginator.num_pages)
 
         return render_to_response('albums_list.html', {'albums': albums})
 
