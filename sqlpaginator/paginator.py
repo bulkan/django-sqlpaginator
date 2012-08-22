@@ -3,16 +3,17 @@ import logging
 from math import ceil
 
 from django.db import connection
-from django.core.paginator import Page, Paginator
+from django.core.paginator import Page
+
+from django.core.paginator import EmptyPage, PageNotAnInteger
 
 
 logger = logging.getLogger(__name__)
 
 
-class SqlPaginator(Paginator):
-    ''' inherits from django.core.paginator to provide same API '''
+class SqlPaginator(object):
 
-    def __init__(self, initial_sql, model, order_by='id', page=1, per_page=10):
+    def __init__(self, initial_sql, model, order_by='id', page=1, count=None, per_page=10):
 
         self.per_page = per_page
 
@@ -20,7 +21,9 @@ class SqlPaginator(Paginator):
 
         self.orphans = 0
 
-        self._num_pages = self._count = None
+        self._num_pages = None
+
+        self._count = count
 
         self.initial_sql = initial_sql
 
@@ -30,6 +33,8 @@ class SqlPaginator(Paginator):
 
         self.page_num = page
 
+        self.allow_empty_first_page = True
+
         # dict to resolve the sql template with
         self.d = {'sql': initial_sql,
              'order_by': order_by,
@@ -37,7 +42,7 @@ class SqlPaginator(Paginator):
              'limit': self.per_page
              }
 
-        self._tsql = '%(sql)s ORDER BY %(order_by)s LIMIT %(limit)d OFFSET %(offset)d' 
+        self._tsql = '%(sql)s order by %(order_by)s limit %(limit)d offset %(offset)d' 
         self._sql = self._tsql % self.d
 
     def get_sql(self):
@@ -47,7 +52,7 @@ class SqlPaginator(Paginator):
     def _get_count(self):
         if self._count is None:
             cursor = connection.cursor()
-            sql = 'SELECT COUNT(*) FROM %(table_name)s as au' % {'table_name': self.model._meta.db_table}
+            sql = "select count(distinct(%s)) from (%s) as q" % (self.model._meta.pk.name, self.initial_sql)
             cursor.execute(sql)
             rows = cursor.fetchall()
             count = int(rows[0][0])
@@ -66,13 +71,28 @@ class SqlPaginator(Paginator):
         return self._num_pages
     num_pages = property(_get_num_pages)
 
+    def validate_number(self, number):
+        "Validates the given 1-based page number."
+        try:
+            number = int(number)
+        except (TypeError, ValueError):
+            raise PageNotAnInteger('That page number is not an integer')
+        if number < 1:
+            raise EmptyPage('That page number is less than 1')
+        if number > self.num_pages:
+            if number == 1 and self.allow_empty_first_page:
+                pass
+            else:
+                raise EmptyPage('That page contains no results')
+        return number
+
     def page(self, number, order_by=None):
         number = self.validate_number(number)
 
         if not order_by:
             order_by = self.order_by
 
-        self.d.update({'offset': (number - 1) * 10,
+        self.d.update({'offset': (number - 1) * self.per_page,
                        'order_by': order_by})
 
         logger.debug('count: %d' % self.count)

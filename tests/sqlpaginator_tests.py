@@ -19,8 +19,8 @@ class SqlPaginatorTests(TestCase):
 
         sql = "SELECT DISTINCT(auth_user.id) FROM auth_user WHERE (DATE_PART('YEAR',AGE(auth_user.dob)) > 10)"
         sql_paginator = SqlPaginator(sql, User)
-        self.assertTrue('LIMIT' in sql_paginator.sql)
-        self.assertTrue('ORDER' in sql_paginator.sql)
+        self.assertTrue('limit' in sql_paginator.sql)
+        self.assertTrue('order' in sql_paginator.sql)
 
     def test_returns_objects(self):
         sql = "select distinct(artistid) from %s" % Artist._meta.db_table
@@ -29,15 +29,15 @@ class SqlPaginatorTests(TestCase):
         self.assertTrue(len(artists) > 0)
 
     def test_has_functions(self):
-        sql = "select artistid from %s" % Artist._meta.db_table
-        sql_paginator = SqlPaginator(sql, Artist, page=6, order_by='name')
+        sql = "select * from %s" % Artist._meta.db_table
+        sql_paginator = SqlPaginator(sql, Artist, page=6, order_by='name', per_page=3)
         artists = sql_paginator.page(6)
         self.assertTrue(len(artists) > 0)
         self.assertTrue(artists.has_next())
         self.assertTrue(artists.has_previous())
 
     def test_order_by(self):
-        sql = "select artistid from %s" % Artist._meta.db_table
+        sql = "select * from %s" % Artist._meta.db_table
         sql_paginator = SqlPaginator(sql, Artist, page=6, order_by='artistid')
         artists = sql_paginator.page(6)
         self.assertEqual([a.artistid for a in artists.object_list][0], 51)
