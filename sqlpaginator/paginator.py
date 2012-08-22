@@ -26,8 +26,9 @@ class SqlPaginator(Paginator):
 
         self.object_list = []
 
+        self.order_by = order_by
+
         self.page_num = page
-        #print 'page: %d' % page
 
         # dict to resolve the sql template with
         self.d = {'sql': initial_sql,
@@ -41,7 +42,6 @@ class SqlPaginator(Paginator):
 
     def get_sql(self):
         return self._sql
-
     sql = property(get_sql)
 
     def _get_count(self):
@@ -66,12 +66,14 @@ class SqlPaginator(Paginator):
         return self._num_pages
     num_pages = property(_get_num_pages)
 
-    def page(self, number):
+    def page(self, number, order_by=None):
         number = self.validate_number(number)
 
-        #cursor = connection.cursor()
+        if not order_by:
+            order_by = self.order_by
 
-        self.d.update({'offset': (number - 1) * 10})
+        self.d.update({'offset': (number - 1) * 10,
+                       'order_by': order_by})
 
         logger.debug('count: %d' % self.count)
         logger.debug('num_pages: %d' % self.num_pages)
@@ -79,12 +81,6 @@ class SqlPaginator(Paginator):
         sql = self._tsql % self.d
         logger.debug("sql: %s" % sql)
 
-        #cursor.execute(sql)
-        #rows = cursor.fetchall()
-        #ids = [row[0] for row in rows]
-
-        #self.object_list = self.model.objects.filter(id__in=ids)
         self.object_list = list(self.model.objects.raw(sql))
 
-        #return Page(object_list[bottom:top], number, self)
         return Page(self.object_list, number, self)

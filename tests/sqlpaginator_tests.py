@@ -29,10 +29,15 @@ class SqlPaginatorTests(TestCase):
         self.assertTrue(len(artists) > 0)
 
     def test_has_functions(self):
-        sql = "select distinct(artistid) from %s" % Artist._meta.db_table
+        sql = "select artistid from %s" % Artist._meta.db_table
         sql_paginator = SqlPaginator(sql, Artist, page=6, order_by='name')
         artists = sql_paginator.page(6)
-        self.assertEqual([a.name for a in artists.object_list][0], 'Cake')
         self.assertTrue(len(artists) > 0)
         self.assertTrue(artists.has_next())
         self.assertTrue(artists.has_previous())
+
+    def test_order_by(self):
+        sql = "select artistid from %s" % Artist._meta.db_table
+        sql_paginator = SqlPaginator(sql, Artist, page=6, order_by='artistid')
+        artists = sql_paginator.page(6)
+        self.assertEqual([a.artistid for a in artists.object_list][0], 51)

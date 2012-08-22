@@ -1,7 +1,6 @@
 import os
 
 FOLDER_ROOT = os.path.normpath(os.path.dirname(__file__))
-print FOLDER_ROOT
 
 DATABASES = {
     'default': {
