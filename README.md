@@ -16,11 +16,13 @@ To install for the moment use the following
 
 In settings.py
 
+```python
     INSTALLED_APPS = (
         ...
         'sqlpaginator',
         ...
     )
+```
 
 Thats it !!
 
@@ -31,18 +33,21 @@ Pretty much same as django.core.pagination.Paginator
 
 If you have the following models
 
+```python
     class Album(models.Model):
          albumid = models.IntegerField(primary_key=True, db_column=u'AlbumId')
-         title = models.TextField(db_column=u'Title') # Field name made lowercase. This field type is a guess.
+         title = models.TextField(db_column=u'Title') 
          artistid = models.IntegerField(db_column=u'ArtistId')
 
     class Artist(models.Model):
          artistid = models.IntegerField(primary_key=True, db_column=u'ArtistId')
-         name = models.TextField(db_column=u'Name', blank=True) # Field name made lowercase. This field type is a guess.
+         name = models.TextField(db_column=u'Name', blank=True) 
+```
 
 
 and you want to paginate on Albums, then inside a view;
 
+```python
 
     from sqlpaginator.paginator import SqlPaginator
     from models import Album
@@ -61,11 +66,11 @@ and you want to paginate on Albums, then inside a view;
             albums = paginator.page(paginator.num_pages)
 
         return render_to_response('albums_list.html', {'albums': albums})
-
+```
 
  In the template ```albums_list.html```
 
-
+```python
     {% for album in albums %}
         {# Each "album" is a Album model object. #}
         {{ album.title|upper }}<br />
@@ -86,7 +91,7 @@ and you want to paginate on Albums, then inside a view;
             {% endif %}
         </span>
     </div>
-
+```
 
 contributing
 =====
