@@ -10,7 +10,11 @@ It will also supports ORDER BY queries
 installation
 ============
 
-To install for the moment use the following
+To install from pypi
+    
+    pip install django-sqlpaginator
+
+To get the latest (and possibly non stable version) from git
 
     pip install git+git://github.com/bulkan/django-sqlpaginator.git
 
