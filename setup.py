@@ -1,6 +1,7 @@
 from setuptools import setup
 
-from version import __version__
+__version__ = ''
+execfile('sqlpaginator/version.py')
 
 description = '''django app that does pagination and ordering using raw
 sql on a Model. It has the same API as the django.core.pagination.Paginator'''
