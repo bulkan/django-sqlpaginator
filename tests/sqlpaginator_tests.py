@@ -1,9 +1,11 @@
 from unittest import TestCase
 
 from django.contrib.auth.models import User
+from django.core.paginator import EmptyPage, PageNotAnInteger
 
 from models import Artist, Album
 from sqlpaginator.paginator import SqlPaginator
+
 
 
 class SqlPaginatorTests(TestCase):
@@ -73,5 +75,25 @@ class SqlPaginatorTests(TestCase):
 
     def test_invalid_order_by_column(self):
         page = 1
-        self.assertRaises(ValueError, SqlPaginator,self.album_sql, Album,
+        self.assertRaises(ValueError, SqlPaginator, self.album_sql, Album,
                                  page=page, order_by='albumid$$$')
+
+    def test_zero_count(self):
+        ''' what happens when the sql creates 0 rows (count=0) '''
+
+        sql = "%s WHERE albumid < 0" % self.album_sql
+        paginator = SqlPaginator(sql, Album, page=1,
+                                 order_by='albumid', direction='desc')
+
+        self.assertEqual(len([a.albumid for a in paginator.page(1)]), 0)
+
+    def test_invalid_number(self):
+        self.assertRaises(ValueError, SqlPaginator, self.album_sql, Album,
+                                 page="one", order_by='albumid')
+
+        paginator = SqlPaginator(self.album_sql, Album, page=1,
+                                 order_by='albumid', direction='descending')
+
+        self.assertRaises(PageNotAnInteger, paginator.page, 'one')
+        self.assertRaises(EmptyPage, paginator.page, paginator.num_pages + 1)
+        self.assertRaises(EmptyPage, paginator.page, -1)
