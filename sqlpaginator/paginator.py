@@ -7,6 +7,9 @@ from django.core.paginator import Page
 
 from django.core.paginator import EmptyPage, PageNotAnInteger
 
+import sqlparse
+from sqlparse import sql
+from sqlparse import tokens
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +32,7 @@ class SqlPaginator(object):
 
         self._num_pages = None
         self.orphans = 0
+        self._initial_raw_sql = initial_sql
         self.initial_sql = initial_sql
         self.object_list = []
 
@@ -41,7 +45,7 @@ class SqlPaginator(object):
 
         # validate sql fields
         if order_by not in self._model_fields:
-            raise ValueError("%s does is not a valid column in %s" % (order_by, self._db_table))
+            raise ValueError("%s is not a valid column in %s" % (order_by, self._db_table))
 
         self.order_by = order_by
 
@@ -49,15 +53,35 @@ class SqlPaginator(object):
         if direction.lower() not in ['asc', 'desc']:
             self.direction = 'asc'
 
+        # order_by queries work differently when using select distinct queries
+        # maybe i should use a sql parser ?
+        self._tsql = '%(sql)s order by %(order_by)s %(direction)s limit %(limit)d offset %(offset)d'
+
+        o = sqlparse.parse(initial_sql)[0]
+
+        from_token = o.token_next_match(0, tokens.Keyword, "FROM")
+
+        found = False
+        for t in o.tokens_between(o.tokens[0], from_token, exclude_end=True):
+            if t.value.lower().find(order_by) > -1:
+                found = True
+                break
+
+        distinct_token = o.token_prev(o.tokens.index(from_token))
+
+        if not found:
+              o.insert_after(distinct_token, sql.Token(tokens.DML, ",%s " % order_by))
+
+        self.initial_sql = o.to_unicode()
+
         # dict to resolve the sql template with
-        self.d = {'sql': initial_sql,
+        self.d = {'sql': self.initial_sql,
                   'order_by': order_by,
                   'offset': int(page - 1) * self.per_page,
                   'limit': self.per_page,
                   'direction': direction,
                  }
 
-        self._tsql = '%(sql)s order by %(order_by)s %(direction)s limit %(limit)d offset %(offset)d'
         self._sql = self._tsql % self.d
 
     def get_sql(self):
@@ -67,7 +91,7 @@ class SqlPaginator(object):
     def _get_count(self):
         if self._count is None:
             cursor = connection.cursor()
-            sql = "select count(distinct(%s)) from (%s) as q" % (self.model._meta.pk.name, self.initial_sql)
+            sql = "select count(distinct(%s)) from (%s) as q" % (self.model._meta.pk.name, self._initial_raw_sql)
             cursor.execute(sql)
             rows = cursor.fetchall()
             count = int(rows[0][0])
@@ -112,7 +136,8 @@ class SqlPaginator(object):
 
         self.d.update({'offset': (number - 1) * self.per_page,
                        'order_by': order_by,
-                       'direction': direction})
+                       'direction': direction,
+                       })
 
         logger.debug('count: %d' % self.count)
         logger.debug('num_pages: %d' % self.num_pages)
