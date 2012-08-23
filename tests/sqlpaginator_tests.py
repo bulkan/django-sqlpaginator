@@ -7,7 +7,6 @@ from models import Artist, Album
 from sqlpaginator.paginator import SqlPaginator
 
 
-
 class SqlPaginatorTests(TestCase):
     album_sql = "select albumid from %s" % Album._meta.db_table
     artist_sql = "select * from %s" % Artist._meta.db_table
