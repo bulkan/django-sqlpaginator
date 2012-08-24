@@ -57,22 +57,22 @@ class SqlPaginator(object):
         # maybe i should use a sql parser ?
         self._tsql = '%(sql)s order by %(order_by)s %(direction)s limit %(limit)d offset %(offset)d'
 
-        o = sqlparse.parse(initial_sql)[0]
+        # get the token list from the query, there will be only one
+        tlist = sqlparse.parse(initial_sql)[0]
+        from_token = tlist.token_next_match(0, tokens.Keyword, "FROM")
 
-        from_token = o.token_next_match(0, tokens.Keyword, "FROM")
+        select_token = tlist.token_next_match(0, tokens.DML, "Select")
 
         found = False
-        for t in o.tokens_between(o.tokens[0], from_token, exclude_end=True):
-            if t.value.lower().find(order_by) > -1:
+        for t in tlist.tokens_between(select_token, from_token, exclude_end=True):
+            if t.value.lower().find(order_by.lower()) > -1:
                 found = True
                 break
 
-        distinct_token = o.token_prev(o.tokens.index(from_token))
-
         if not found:
-              o.insert_after(distinct_token, sql.Token(tokens.DML, ",%s " % order_by))
+              tlist.insert_before(from_token, sql.Token(tokens.DML, ",%s " % order_by))
 
-        self.initial_sql = o.to_unicode()
+        self.initial_sql = tlist.to_unicode()
 
         # dict to resolve the sql template with
         self.d = {'sql': self.initial_sql,
