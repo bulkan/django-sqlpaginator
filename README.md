@@ -18,6 +18,10 @@ To get the latest (and possibly non stable version) from git
 
     pip install git+git://github.com/bulkan/django-sqlpaginator.git
 
+You also need to install sqlparser
+
+    pip install git+git://github.com/andialbrecht/sqlparse.git
+
 In settings.py
 
 ```python
