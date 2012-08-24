@@ -14,7 +14,7 @@ setup(
     author='Bulkan Evcimen',
     author_email='bulkan@gmail.com',
     url='https://github.com/bulkan/django-sqlpaginator',
-    dependency_links="https://github.com/andialbrecht/sqlparse",
+    dependency_links=["https://github.com/andialbrecht/sqlparse"],
     install_requires=[
         'distribute',
         'sqlparse'
