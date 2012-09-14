@@ -58,7 +58,7 @@ class SqlPaginator(object):
 
         # order_by queries work differently when using select distinct queries
         # maybe i should use a sql parser ?
-        self._tsql = '%(sql)s order by %(order_by)s %(direction)s limit %(limit)d offset %(offset)d'
+        self._tsql = '%(sql)s order by "%(order_by)s" %(direction)s limit %(limit)d offset %(offset)d'
 
         # get the token list from the query, there will be only one
         tlist = sqlparse.parse(initial_sql)[0]
