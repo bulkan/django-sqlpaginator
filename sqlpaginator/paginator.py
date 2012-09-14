@@ -46,6 +46,9 @@ class SqlPaginator(object):
         # validate sql fields
         if order_by not in self._model_fields:
             raise ValueError("%s is not a valid column in %s" % (order_by, self._db_table))
+        
+        # sometimes its really a foreign key, so get the real colum name
+        order_by = self.model._meta.get_field(order_by).column
 
         self.order_by = order_by
 
