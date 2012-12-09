@@ -151,3 +151,11 @@ class SqlPaginator(object):
         self.object_list = list(self.model.objects.raw(sql))
 
         return Page(self.object_list, number, self)
+
+    def _get_page_range(self):
+        """
+        Returns a 1-based range of pages for iterating through within
+        a template for loop.
+        """
+        return range(1, self.num_pages + 1)
+    page_range = property(_get_page_range)
