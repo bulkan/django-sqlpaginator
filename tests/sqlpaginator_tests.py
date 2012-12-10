@@ -96,3 +96,9 @@ class SqlPaginatorTests(TestCase):
         self.assertRaises(PageNotAnInteger, paginator.page, 'one')
         self.assertRaises(EmptyPage, paginator.page, paginator.num_pages + 1)
         self.assertRaises(EmptyPage, paginator.page, -1)
+
+    def test_get_page_range(self):
+        page = 1
+        paginator = SqlPaginator(self.album_sql, Album,
+                                 page=page, order_by='albumid')
+        self.assertEqual(len(paginator.page_range), paginator.num_pages)
