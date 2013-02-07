@@ -1,3 +1,4 @@
 Django
+coverage
 nose
 git+git://github.com/andialbrecht/sqlparse.git
