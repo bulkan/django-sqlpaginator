@@ -1,4 +1,6 @@
 [![Build Status](https://secure.travis-ci.org/bulkan/django-sqlpaginator.png?branch=master)](http://travis-ci.org/bulkan/django-sqlpaginator)
+[![PyPi downloads](https://pypip.in/d/django-sqlpaginator/badge.png)](https://crate.io/packages/django-sqlpaginator/)
+
 
 django-sqlpaginator
 ===================
